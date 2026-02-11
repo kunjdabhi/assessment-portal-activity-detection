@@ -25,7 +25,6 @@ export function useEventSubmission(
             eventBatch.current = [];
 
             if (isOnline) {
-                // Online: send directly
                 try {
                     await sendEventLogs(eventsToSend);
                     console.log('Events sent successfully');
@@ -34,7 +33,6 @@ export function useEventSubmission(
                     eventsToSend.forEach(event => addEventToQueue(event));
                 }
             } else {
-                // Offline: add to queue
                 console.log('Offline: queuing events');
                 eventsToSend.forEach(event => addEventToQueue(event));
             }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import './App.css'
 import { registerIp, sendEventLogs, completeAttempt } from './services/ip.services'
 import type { EventDTO } from './types/event.types'
@@ -28,9 +28,12 @@ function App() {
   const [username, setUsername] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
+  
+  const [questions, setQuestions] = useState<any[]>([]); 
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+
   const eventBatch = useRef<EventDTO[]>([])
-
-
+  
   const { timeRemaining, setTimeRemaining } = useAssessmentTimer(
     INITIAL_TIME, 
     attemptId, 
@@ -39,7 +42,6 @@ function App() {
     eventBatch
   );
 
-  
   useEventSubmission(attemptId, isRunning, eventBatch);
 
   const registerAttempt = async () => {
@@ -51,7 +53,6 @@ function App() {
     try {
         setError(null);
         const data = await registerIp(username, "152.59.15.211");
-        console.log(data);
         setAttemptId(data.attempt._id);
         eventBatch.current.push({
           name: "IP_CAPTURED_INITIALLY",
@@ -59,52 +60,50 @@ function App() {
           attemptId: data.attempt._id
         })
         setIsRunning(true);
+        setCurrentIndex(0); 
         
         try {
           await document.documentElement.requestFullscreen();
-          console.log("Fullscreen mode activated");
         } catch (error) {
           console.error("Failed to enter fullscreen:", error);
         }
     } catch (err: any) {
-        console.error("Registration failed:", err);
-        setError(err.response?.data?.error || "Failed to start assessment. Please try again.");
+        const errorMessage = err.response?.data?.error || "Failed to start assessment. Please try again.";
+        setError(errorMessage);
+        alert(errorMessage);
     }
   }
 
-  // Session restore callback
-  const handleSessionRestore = (session: SessionData) => {
-    console.log('Restoring session:', session);
+  const handleSessionRestore = useCallback((session: SessionData) => {
     setAttemptId(session.attemptId);
     setTimeRemaining(session.timeRemaining);
     setIsRunning(session.isRunning);
-  };
+    if (session.questions) setQuestions(session.questions);
+    if (session.currentIndex !== undefined) setCurrentIndex(session.currentIndex);
+  }, [setTimeRemaining]);
 
-  // Session persistence hook
   const { clearSession } = useSessionPersistence({
     attemptId,
     timeRemaining,
     isRunning,
+    questions,
+    currentIndex,
     onRestore: handleSessionRestore
   });
 
-  // Network status
   const { isOnline, wasOffline } = useNetworkStatus();
 
   useBrowserEventHandlers(INITIAL_TIME, attemptId, setAttemptId, eventBatch);
   useIpMonitoring({ attemptId, isRunning, intervalMs: IP_CHECK_INTERVAL });
 
-  // Sync queued events when coming back online
   useEffect(() => {
     if (wasOffline && isOnline) {
       const syncQueuedEvents = async () => {
         const queue = getEventQueue();
         if (queue.length > 0) {
-          console.log(`Syncing ${queue.length} queued events...`);
           try {
             await sendEventLogs(queue);
             clearEventQueue();
-            console.log('Queued events synced successfully');
           } catch (error) {
             console.error('Failed to sync queued events:', error);
           }
@@ -116,26 +115,34 @@ function App() {
 
   useEffect(() => {
     if(timeRemaining === 0 && attemptId) {
-      console.log("Timer ended");
     }
   }, [timeRemaining, attemptId])
 
   const handleAssessmentComplete = async () => {
     setIsRunning(false);
-    console.log("Assessment completed - stopping all event monitoring");
     
-    // Call backend to log ATTEMPT_COMPLETED event
     if (attemptId) {
       try {
         await completeAttempt(attemptId);
-        console.log("Attempt completion logged");
       } catch (error) {
-        console.error("Failed to log attempt completion:", error);
+        alert("Failed to confirm assessment completion. Please check your connection.");
       }
     }
     
-    // Clear session from localStorage
     await clearSession();
+  };
+
+  const handleGoHome = () => {
+    setAttemptId(null);
+    setUsername("");
+    setError(null);
+    setIsRunning(false);
+    setTimeRemaining(INITIAL_TIME);
+    setQuestions([]);
+    setCurrentIndex(0);
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(err => console.error(err));
+    }
   };
 
   return (
@@ -165,6 +172,11 @@ function App() {
         {attemptId && <Assessment 
           onComplete={handleAssessmentComplete} 
           isTimeUp={timeRemaining === 0}
+          onGoHome={handleGoHome}
+          questions={questions}
+          setQuestions={setQuestions}
+          currentIndex={currentIndex}
+          setCurrentIndex={setCurrentIndex}
         />}
       </div>
     </>

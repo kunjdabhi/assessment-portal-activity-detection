@@ -13,7 +13,6 @@ export function useAssessmentTimer(
 
     useEffect(() => {
         if (isRunning && attemptId) {
-            // Log timer start/resume
             eventBatch.current.push({
                 name: "TIMER_TICK",
                 timestamp: Date.now(),
@@ -23,7 +22,6 @@ export function useAssessmentTimer(
             intervalRef.current = setInterval(() => {
                 setTimeRemaining((prev) => {
                     if (prev <= 1) {
-                        // Timer completed
                         setIsRunning(false);
                         if (intervalRef.current) {
                             clearInterval(intervalRef.current);

@@ -5,7 +5,6 @@ interface TimerProps {
 }
 
 export function Timer({ timeRemaining }: TimerProps) {
-    // Format time as MM:SS
     const minutes = Math.floor(timeRemaining / 60);
     const seconds = timeRemaining % 60;
     const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;

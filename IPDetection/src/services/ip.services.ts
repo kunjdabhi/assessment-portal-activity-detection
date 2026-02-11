@@ -15,7 +15,6 @@ const registerIp = async (username: string, ip: string) => {
 }
 
 const sendEventLogs = async (events: EventDTO[]) => {
-    console.log(events)
     const response = await axios.post(`/api/events`, events);
     return response.data;
 }

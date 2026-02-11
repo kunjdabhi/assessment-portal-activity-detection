@@ -9,14 +9,12 @@ const getIpInfo = (req: Request, res: Response) => {
 const registerIp = async (req: Request, res: Response) => {
     try {
         const body = req.body;
-        console.log(body)
         const { username } = body;
 
         if (!username) {
             return res.status(400).json({ error: 'username is required' });
         }
 
-        //for testing purpose
         const testIp = body.ip as string;
         const detectedIp = request.getClientIp(req);
 
@@ -24,7 +22,6 @@ const registerIp = async (req: Request, res: Response) => {
 
         let attempt;
         if (ip) {
-            // Include username in the DTO
             attempt = await addAttempt({
                 ...body,
                 username,
@@ -40,7 +37,6 @@ const registerIp = async (req: Request, res: Response) => {
 
     } catch (ex) {
         const error = ex as Error;
-        console.log(error.message)
         res.status(500).json({ error: error.message });
     }
 };
@@ -53,7 +49,6 @@ const addEventLog = async (req: Request, res: Response) => {
         res.status(200).json({ message: "Events added successfully", ipChanged });
     } catch (ex) {
         const error = ex as Error;
-        console.log(error.message)
         res.status(500).json({ error: error.message });
     }
 }
@@ -62,7 +57,6 @@ const checkIp = async (req: Request, res: Response) => {
     try {
         const { attemptId, testIp } = req.body;
 
-        // Use testIp if provided (for testing), otherwise detect from request
         const detectedIp = request.getClientIp(req);
         const currentIp = testIp || detectedIp;
 

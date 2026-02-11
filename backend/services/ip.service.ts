@@ -23,7 +23,6 @@ const addAttempt = async (body: CreateAttemptDTO) => {
 }
 
 
-// Helper to handle IP change logic
 const handleIpChange = async (attemptData: any, detectedIp: string): Promise<{
     ipChanged: boolean;
     ipChangeType: 'BENIGN' | 'SUSPICIOUS' | null;
@@ -43,7 +42,6 @@ const handleIpChange = async (attemptData: any, detectedIp: string): Promise<{
 
         ipChangeType = await classifyIpChange(oldIp, detectedIp);
 
-        // Core IP change events
         events.push(
             {
                 name: "IP_CHANGE_DETECTED",
@@ -121,7 +119,6 @@ const checkIpForAttempt = async (attemptId: string, detectedIp: string | null) =
 
     const eventsToAdd: CreateEventDTO[] = [];
 
-    // Always log IP_CHECK_PERFORMED
     eventsToAdd.push({
         name: "IP_CHECK_PERFORMED",
         timestamp: new Date(),
@@ -143,7 +140,6 @@ const checkIpForAttempt = async (attemptId: string, detectedIp: string | null) =
         }
     }
 
-    // Save all events to database
     await Event.insertMany(eventsToAdd);
 
     return {
@@ -156,14 +152,12 @@ const checkIpForAttempt = async (attemptId: string, detectedIp: string | null) =
 
 const completeAttempt = async (attemptId: string) => {
     try {
-        // Find the attempt
         const attempt = await Attempt.findById(attemptId);
 
         if (!attempt) {
             throw new Error('Attempt not found');
         }
 
-        // Create ATTEMPT_COMPLETED event
         const completionEvent = {
             name: 'ATTEMPT_COMPLETED',
             timestamp: new Date(),

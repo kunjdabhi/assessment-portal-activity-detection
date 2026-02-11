@@ -33,14 +33,29 @@ const DEMO_QUESTIONS: Question[] = [
 interface AssessmentProps {
     onComplete?: () => void;
     isTimeUp?: boolean;
+    onGoHome?: () => void;
+    questions: Question[];
+    setQuestions: (questions: Question[]) => void;
+    currentIndex: number;
+    setCurrentIndex: (index: number) => void;
 }
 
-export function Assessment({ onComplete, isTimeUp }: AssessmentProps) {
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [questions, setQuestions] = useState<Question[]>(DEMO_QUESTIONS);
+export function Assessment({ 
+    onComplete, 
+    isTimeUp, 
+    onGoHome, 
+    questions, 
+    setQuestions, 
+    currentIndex, 
+    setCurrentIndex 
+}: AssessmentProps) {
+    if (questions.length === 0) {
+        setQuestions(DEMO_QUESTIONS);
+        return null; 
+    }
+    
     const [isCompleted, setIsCompleted] = useState(false);
 
-    // Force completion if time is up
     if (isTimeUp && !isCompleted) {
         setIsCompleted(true);
         if (onComplete) {
@@ -50,7 +65,7 @@ export function Assessment({ onComplete, isTimeUp }: AssessmentProps) {
 
     const currentQuestion = questions[currentIndex];
 
-    const handleAnswerChange = (value: string) => {
+     const handleAnswerChange = (value: string) => {
         const updatedQuestions = [...questions];
         updatedQuestions[currentIndex].answer = value;
         setQuestions(updatedQuestions);
@@ -61,7 +76,6 @@ export function Assessment({ onComplete, isTimeUp }: AssessmentProps) {
             setCurrentIndex(currentIndex + 1);
         } else {
             setIsCompleted(true);
-            // Notify parent that assessment is complete
             if (onComplete) {
                 onComplete();
             }
@@ -80,6 +94,13 @@ export function Assessment({ onComplete, isTimeUp }: AssessmentProps) {
                 <div className="completion-card">
                     <h2>Assessment Completed!</h2>
                     <p>You have successfully completed all questions.</p>
+                    <button 
+                        className="btn btn-primary" 
+                        onClick={onGoHome}
+                        style={{ marginTop: '1rem' }}
+                    >
+                        Back to Home
+                    </button>
                 </div>
             </div>
         );

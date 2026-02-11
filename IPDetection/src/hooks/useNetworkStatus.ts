@@ -10,7 +10,6 @@ export function useNetworkStatus() {
             setIsOnline(true);
             setWasOffline(true);
 
-            // Reset wasOffline after a short delay
             setTimeout(() => setWasOffline(false), 1000);
         };
 

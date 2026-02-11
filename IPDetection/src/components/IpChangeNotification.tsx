@@ -17,7 +17,6 @@ export function IpChangeNotification() {
             setDetails(customEvent.detail);
             setShow(true);
 
-            // Auto-hide after 5 seconds
             setTimeout(() => {
                 setShow(false);
             }, 5000);

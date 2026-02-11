@@ -8,7 +8,7 @@ export const getIpInfo = async (ip: string) => {
         return response.data;
     } catch (error) {
         console.error(`Failed to get IP info for ${ip}:`, error);
-        return { org: 'Unknown', city: 'Unknown' }; // Fallback
+        return { org: 'Unknown', city: 'Unknown' };
     }
 }
 
@@ -23,6 +23,6 @@ export const classifyIpChange = async (oldIp: string, newIp: string): Promise<'B
         return "SUSPICIOUS";
     } catch (error) {
         console.error('Error classifying IP change:', error);
-        return "SUSPICIOUS"; // Default to suspicious on error
+        return "SUSPICIOUS";
     }
 }

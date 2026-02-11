@@ -1,18 +1,15 @@
 import type { Request, Response } from 'express';
-import Attempt from '../models/attempt.model';
-import Event from '../models/event.model';
+import Attempt from '../models/attempt.model.js';
+import Event from '../models/event.model.js';
 
 export const getAllAttempts = async (req: Request, res: Response) => {
     try {
-        // Fetch all attempts with event counts
         const attempts = await Attempt.find().sort({ timestamp: -1 }).lean();
 
-        // Get event counts for each attempt
         const attemptsWithStats = await Promise.all(
-            attempts.map(async (attempt) => {
+            attempts.map(async (attempt: any) => {
                 const eventCount = await Event.countDocuments({ attemptId: attempt._id });
 
-                // Count suspicious events (IP changes, fullscreen exits, etc.)
                 const suspiciousEventCount = await Event.countDocuments({
                     attemptId: attempt._id,
                     name: {
@@ -44,14 +41,12 @@ export const getAttemptEvents = async (req: Request, res: Response) => {
     try {
         const { attemptId } = req.params;
 
-        // Fetch attempt details
         const attempt = await Attempt.findById(attemptId).lean();
 
         if (!attempt) {
             return res.status(404).json({ error: 'Attempt not found' });
         }
 
-        // Fetch all events for this attempt, sorted by timestamp
         const events = await Event.find({ attemptId })
             .sort({ timestamp: 1 })
             .lean();

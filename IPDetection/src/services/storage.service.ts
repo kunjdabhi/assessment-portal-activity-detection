@@ -7,10 +7,11 @@ export interface SessionData {
     attemptId: string;
     timeRemaining: number;
     isRunning: boolean;
+    questions?: any[];
+    currentIndex?: number;
     lastUpdated: number;
 }
 
-// Session operations
 export const saveSession = (session: SessionData): void => {
     try {
         localStorage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -37,7 +38,6 @@ export const clearSession = (): void => {
     }
 };
 
-// Event queue operations
 export const addEventToQueue = (event: EventDTO): void => {
     try {
         const queue = getEventQueue();
