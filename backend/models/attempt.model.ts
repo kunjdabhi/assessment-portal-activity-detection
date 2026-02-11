@@ -7,6 +7,10 @@ const AttemptSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    username: {
+        type: String,
+        required: true
+    },
     timestamp: {
         type: Date,
         default: Date.now
@@ -22,6 +26,12 @@ const AttemptSchema = new mongoose.Schema({
         default: 0
     },
     lastKnownIp: {
+        type: String,
+    },
+    browserName: {
+        type: String,
+    },
+    hostOs: {
         type: String,
     }
 })

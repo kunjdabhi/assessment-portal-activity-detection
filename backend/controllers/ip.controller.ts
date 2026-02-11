@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import request from "request-ip"
-import { addAttempt, addEvents } from "../services/ip.service.js";
+import { addAttempt, addEvents, checkIpForAttempt, completeAttempt as completeAttemptService } from "../services/ip.service.js";
 
 const getIpInfo = (req: Request, res: Response) => {
     res.send("Hello World!");
@@ -8,15 +8,28 @@ const getIpInfo = (req: Request, res: Response) => {
 
 const registerIp = async (req: Request, res: Response) => {
     try {
+        const body = req.body;
+        console.log(body)
+        const { username } = body;
+
+        if (!username) {
+            return res.status(400).json({ error: 'username is required' });
+        }
+
         //for testing purpose
-        const testIp = req.query.ip as string;
+        const testIp = body.ip as string;
         const detectedIp = request.getClientIp(req);
 
         const ip = testIp || detectedIp;
 
         let attempt;
         if (ip) {
-            attempt = await addAttempt(ip);
+            // Include username in the DTO
+            attempt = await addAttempt({
+                ...body,
+                username,
+                ip
+            });
         }
 
         res.status(200).json({
@@ -25,9 +38,10 @@ const registerIp = async (req: Request, res: Response) => {
             source: testIp ? 'query_parameter' : 'detected'
         });
 
-    } catch (ex: any) {
-        console.log(ex.message)
-        res.status(500).json({ error: ex.message });
+    } catch (ex) {
+        const error = ex as Error;
+        console.log(error.message)
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -35,12 +49,69 @@ const addEventLog = async (req: Request, res: Response) => {
     try {
         const events = req.body;
         const detectedIp = request.getClientIp(req);
-        await addEvents(events, detectedIp);
-        res.status(200).json({ message: "Events added successfully" });
-    } catch (ex: any) {
-        console.log(ex.message)
-        res.status(500).json({ error: ex.message });
+        const ipChanged = await addEvents(events, detectedIp);
+        res.status(200).json({ message: "Events added successfully", ipChanged });
+    } catch (ex) {
+        const error = ex as Error;
+        console.log(error.message)
+        res.status(500).json({ error: error.message });
     }
 }
 
-export { getIpInfo, registerIp, addEventLog };
+const checkIp = async (req: Request, res: Response) => {
+    try {
+        const { attemptId, testIp } = req.body;
+
+        // Use testIp if provided (for testing), otherwise detect from request
+        const detectedIp = request.getClientIp(req);
+        const currentIp = testIp || detectedIp;
+
+        if (!attemptId) {
+            return res.status(400).json({ error: 'attemptId is required' });
+        }
+
+        const result = await checkIpForAttempt(attemptId, currentIp as string);
+
+        res.status(200).json({
+            ...result,
+            currentIp,
+            source: testIp ? 'test_parameter' : 'detected'
+        });
+
+    } catch (ex) {
+        const error = ex as Error;
+        console.error("Error in checkIp:", error.message);
+
+        if (error.message === 'Attempt not found') {
+            return res.status(404).json({ error: error.message });
+        }
+
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const completeAttempt = async (req: Request, res: Response) => {
+    try {
+        const { attemptId } = req.body;
+
+        if (!attemptId) {
+            return res.status(400).json({ error: 'attemptId is required' });
+        }
+
+        const result = await completeAttemptService(attemptId);
+
+        res.status(200).json(result);
+
+    } catch (ex) {
+        const error = ex as Error;
+        console.error("Error in completeAttempt:", error.message);
+
+        if (error.message === 'Attempt not found') {
+            return res.status(404).json({ error: error.message });
+        }
+
+        res.status(500).json({ error: error.message });
+    }
+};
+
+export { getIpInfo, registerIp, addEventLog, checkIp, completeAttempt };

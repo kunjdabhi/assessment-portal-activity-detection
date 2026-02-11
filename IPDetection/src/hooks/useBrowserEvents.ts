@@ -1,8 +1,5 @@
 import { useEffect, useRef, type RefObject } from "react";
-import type { EventDTO } from "../../types/event.types";
-
-const hostBrowser = getBrowserName();
-const hostOS = getOSName();
+import type { EventDTO } from "../types/event.types";
 
 export function useBrowserEventHandlers(
     assessmentDurationInSeconds: number,
@@ -109,34 +106,7 @@ export function useBrowserEventHandlers(
 }
 
 function addEventsToBatch(event: EventDTO, eventBatch: RefObject<EventDTO[]>) {
-    eventBatch.current.push({
-        ...event,
-        metadata: {
-            browserName: hostBrowser,
-            hostOs: hostOS
-        }
-    });
-}
-
-function getBrowserName(): string {
-    const ua = navigator.userAgent;
-
-    if (ua.includes("Chrome")) return "Chrome";
-    if (ua.includes("Firefox")) return "Firefox";
-    if (ua.includes("Safari") && !ua.includes("Chrome")) return "Safari";
-    if (ua.includes("Edg")) return "Edge";
-
-    return "Unknown";
-}
-
-function getOSName(): string {
-    const platform = navigator.platform;
-
-    if (platform.startsWith("Win")) return "Windows";
-    if (platform.startsWith("Mac")) return "macOS";
-    if (platform.startsWith("Linux")) return "Linux";
-
-    return "Unknown";
+    eventBatch.current.push(event);
 }
 
 

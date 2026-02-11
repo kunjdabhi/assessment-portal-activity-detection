@@ -3,12 +3,11 @@ import mongoose from "mongoose";
 const EventSchema = new mongoose.Schema({
     id: {
         type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: "Attempt"
+        auto: true
     },
-    event: {
+    name: {
         type: String,
-        enum: ["IP_CAPTURED_INITIALLY", "IP_CHECK_PERFORMED", " IP_CHANGE_DETECTED", "IP_CHANGE_CLASSIFIED", "IP_CHANGE_WARNING_SHOWN", "FULLSCREEN_ENTERED", "FULLSCREEN_EXITED", "TAB_VISIBILITY_CHANGED", "WINDOW_BLUR", "WINDOW_FOCUS", "TIMER_TICK", "TIMER_COMPLETED", "COPY_DETECTED", "PASTE_DETECTED"],
+        enum: ["IP_CAPTURED_INITIALLY", "IP_CHECK_PERFORMED", "IP_CHANGE_DETECTED", "IP_CHANGE_CLASSIFIED", "IP_CHANGE_WARNING_SHOWN", "FULLSCREEN_ENTERED", "FULLSCREEN_EXITED", "TAB_VISIBILITY_CHANGED", "WINDOW_BLUR", "WINDOW_FOCUS", "TIMER_TICK", "TIMER_COMPLETED", "COPY_DETECTED", "PASTE_DETECTED", "ATTEMPT_COMPLETED"],
         required: true
     },
     timestamp: {

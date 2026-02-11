@@ -1,6 +1,7 @@
 import express, { type Request, type Response } from "express";
 import dotenv from "dotenv";
 import ipRoute from "./routes/ip.route.js";
+import adminRoute from "./routes/admin.routes.js";
 import connectDB from "./config/db.js";
 import requestIp from "request-ip";
 import cors from "cors";
@@ -8,11 +9,12 @@ import cors from "cors";
 dotenv.config();
 
 const app = express();
-
+app.use(express.json());
 app.use(cors());
 app.set("trust proxy", true);
 app.use(requestIp.mw());
 app.use("/api", ipRoute);
+app.use("/api/admin", adminRoute);
 
 connectDB();
 

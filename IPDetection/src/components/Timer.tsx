@@ -1,4 +1,4 @@
-import './Timer.css';
+
 
 interface TimerProps {
     timeRemaining: number;
