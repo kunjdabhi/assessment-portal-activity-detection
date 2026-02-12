@@ -22,6 +22,7 @@ interface Event {
         oldIp?: string;
         newIp?: string;
         ipChangeType?: string;
+        ipChangeCount?: number;
     };
 }
 
@@ -197,6 +198,9 @@ export function AdminDashboard() {
                                             )}
                                             {event.metadata.ipChangeType && (
                                                 <div>Type: {event.metadata.ipChangeType}</div>
+                                            )}
+                                            {event.metadata.ipChangeCount != null && (
+                                                <div>IP Change Count: {event.metadata.ipChangeCount}</div>
                                             )}
                                         </div>
                                     )}

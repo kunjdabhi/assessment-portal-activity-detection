@@ -15,7 +15,7 @@ import type { SessionData } from './services/storage.service'
 import { getEventQueue, clearEventQueue } from './services/storage.service'
 import { AdminDashboard } from './pages/AdminDashboard'
 
-const INITIAL_TIME = 10; 
+const INITIAL_TIME = 10 * 60; 
 const IP_CHECK_INTERVAL = 30000; 
 
 function App() {
@@ -28,6 +28,9 @@ function App() {
   const [username, setUsername] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [testIp, setTestIp] = useState<string>("");
+  const [testIpInput, setTestIpInput] = useState<string>("");
+  const [devMode, setDevMode] = useState<boolean>(false);
   
   const [questions, setQuestions] = useState<any[]>([]); 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -52,7 +55,7 @@ function App() {
 
     try {
         setError(null);
-        const data = await registerIp(username, "152.59.15.211");
+        const data = await registerIp(username);
         setAttemptId(data.attempt._id);
         eventBatch.current.push({
           name: "IP_CAPTURED_INITIALLY",
@@ -94,7 +97,7 @@ function App() {
   const { isOnline, wasOffline } = useNetworkStatus();
 
   useBrowserEventHandlers(INITIAL_TIME, attemptId, setAttemptId, eventBatch);
-  useIpMonitoring({ attemptId, isRunning, intervalMs: IP_CHECK_INTERVAL });
+  useIpMonitoring({ attemptId, isRunning, intervalMs: IP_CHECK_INTERVAL, testIp: testIp || undefined });
 
   useEffect(() => {
     if (wasOffline && isOnline) {
@@ -123,6 +126,18 @@ function App() {
     
     if (attemptId) {
       try {
+        if (eventBatch.current.length > 0) {
+          const pendingEvents = [...eventBatch.current];
+          eventBatch.current = [];
+          await sendEventLogs(pendingEvents);
+        }
+
+        const queuedEvents = getEventQueue();
+        if (queuedEvents.length > 0) {
+          await sendEventLogs(queuedEvents);
+          clearEventQueue();
+        }
+
         await completeAttempt(attemptId);
       } catch (error) {
         alert("Failed to confirm assessment completion. Please check your connection.");
@@ -148,6 +163,95 @@ function App() {
   return (
     <>
       <IpChangeNotification />
+      {attemptId && (
+        <div style={{
+          position: 'fixed',
+          bottom: '10px',
+          right: '10px',
+          zIndex: 9999,
+        }}>
+          <button
+            onClick={() => setDevMode(!devMode)}
+            style={{
+              background: devMode ? '#ef4444' : '#3b82f6',
+              color: 'white',
+              border: 'none',
+              padding: '8px 12px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}
+          >
+            {devMode ? 'Close Dev' : 'Dev Mode'}
+          </button>
+          {devMode && (
+            <div style={{
+              background: '#1e293b',
+              color: '#e2e8f0',
+              padding: '12px',
+              borderRadius: '8px',
+              marginTop: '8px',
+              minWidth: '220px',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+              fontSize: '13px'
+            }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '8px' }}> Test IP Override</div>
+              <input
+                type="text"
+                placeholder="e.g. 8.8.8.8"
+                value={testIpInput}
+                onChange={(e) => setTestIpInput(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '6px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #475569',
+                  background: '#0f172a',
+                  color: '#e2e8f0',
+                  fontSize: '13px',
+                  boxSizing: 'border-box'
+                }}
+              />
+              <div style={{ marginTop: '6px', fontSize: '11px', color: '#94a3b8' }}>
+                {testIp ? `Active test IP: ${testIp}` : 'No override active (using real IP)'}
+              </div>
+              <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                <button
+                  onClick={() => { setTestIp(testIpInput); }}
+                  disabled={!testIpInput.trim()}
+                  style={{
+                    background: testIpInput.trim() ? '#22c55e' : '#334155',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    cursor: testIpInput.trim() ? 'pointer' : 'not-allowed',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Apply IP
+                </button>
+                <button
+                  onClick={() => { setTestIp(''); setTestIpInput(''); }}
+                  style={{
+                    background: '#475569',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px'
+                  }}
+                >
+                  Reset to Real IP
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       {attemptId && <Timer timeRemaining={timeRemaining} />}
       <div className="card">
         {!attemptId && (

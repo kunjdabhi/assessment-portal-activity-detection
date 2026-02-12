@@ -4,33 +4,47 @@ import Event from '../models/event.model.js';
 
 export const getAllAttempts = async (req: Request, res: Response) => {
     try {
-        const attempts = await Attempt.find().sort({ timestamp: -1 }).lean();
-
-        const attemptsWithStats = await Promise.all(
-            attempts.map(async (attempt: any) => {
-                const eventCount = await Event.countDocuments({ attemptId: attempt._id });
-
-                const suspiciousEventCount = await Event.countDocuments({
-                    attemptId: attempt._id,
-                    name: {
-                        $in: [
-                            'IP_CHANGE_DETECTED',
-                            'FULLSCREEN_EXITED',
-                            'TAB_VISIBILITY_CHANGED',
-                            'WINDOW_BLUR'
-                        ]
+        const attempts = await Attempt.aggregate([
+            {
+                $sort: { timestamp: -1 }
+            },
+            {
+                $lookup: {
+                    from: "events",
+                    localField: "_id",
+                    foreignField: "attemptId",
+                    as: "events"
+                }
+            },
+            {
+                $addFields: {
+                    eventCount: { $size: "$events" },
+                    suspiciousEventCount: {
+                        $size: {
+                            $filter: {
+                                input: "$events",
+                                as: "event",
+                                cond: {
+                                    $in: ["$$event.name", [
+                                        'IP_CHANGE_DETECTED',
+                                        'FULLSCREEN_EXITED',
+                                        'TAB_VISIBILITY_CHANGED',
+                                        'WINDOW_BLUR'
+                                    ]]
+                                }
+                            }
+                        }
                     }
-                });
+                }
+            },
+            {
+                $project: {
+                    events: 0
+                }
+            }
+        ]);
 
-                return {
-                    ...attempt,
-                    eventCount,
-                    suspiciousEventCount
-                };
-            })
-        );
-
-        res.status(200).json({ attempts: attemptsWithStats });
+        res.status(200).json({ attempts });
     } catch (error) {
         console.error('Error fetching attempts:', error);
         res.status(500).json({ error: 'Failed to fetch attempts' });

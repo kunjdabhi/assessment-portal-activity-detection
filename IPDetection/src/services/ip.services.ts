@@ -4,10 +4,9 @@ import { getBrowserName, getOSName } from "../utils/ipUtils";
 
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URI;
 
-const registerIp = async (username: string, ip: string) => {
+const registerIp = async (username: string) => {
     const response = await axios.post(`/api/ip`, {
         username,
-        ip,
         browserName: getBrowserName(),
         hostOs: getOSName()
     });

@@ -4,17 +4,20 @@ import { checkIp } from "../services/ip.services";
 interface UseIpMonitoringProps {
     attemptId: string | null;
     isRunning: boolean;
-    intervalMs?: number; // Configurable interval in milliseconds
+    intervalMs?: number;
+    testIp?: string;
 }
 
 export function useIpMonitoring({
     attemptId,
     isRunning,
-    intervalMs = 30000
+    intervalMs = 30000,
+    testIp
 }: UseIpMonitoringProps) {
     const ipCheckIntervalRef = useRef<number | null>(null);
-    const lastIpChangeWarningRef = useRef<number>(0);
-    const WARNING_COOLDOWN = 60000;
+    const testIpRef = useRef<string | undefined>(testIp);
+
+    testIpRef.current = testIp;
 
     useEffect(() => {
         if (!attemptId || !isRunning) {
@@ -23,24 +26,16 @@ export function useIpMonitoring({
 
         const performIpCheck = async () => {
             try {
-                const result = await checkIp(attemptId);
+                const result = await checkIp(attemptId, testIpRef.current);
 
                 if (result.ipChanged) {
-                    const now = Date.now();
-
-                    const shouldShowWarning = (now - lastIpChangeWarningRef.current) > WARNING_COOLDOWN;
-
-                    if (shouldShowWarning) {
-                        lastIpChangeWarningRef.current = now;
-
-                        window.dispatchEvent(new CustomEvent('ip-change-detected', {
-                            detail: {
-                                oldIp: result.oldIp,
-                                newIp: result.currentIp,
-                                ipChangeType: result.ipChangeType
-                            }
-                        }));
-                    }
+                    window.dispatchEvent(new CustomEvent('ip-change-detected', {
+                        detail: {
+                            oldIp: result.oldIp,
+                            newIp: result.currentIp,
+                            ipChangeType: result.ipChangeType
+                        }
+                    }));
                 }
             } catch (error) {
                 alert("Failed to verify IP address. Please check your connection.");

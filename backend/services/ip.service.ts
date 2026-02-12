@@ -47,19 +47,19 @@ const handleIpChange = async (attemptData: any, detectedIp: string): Promise<{
                 name: "IP_CHANGE_DETECTED",
                 timestamp: new Date(),
                 attemptId: attemptData._id,
-                metadata: { oldIp, newIp: detectedIp }
+                metadata: { oldIp, newIp: detectedIp, ipChangeCount: attemptData.ipChangeCount }
             },
             {
                 name: "IP_CHANGE_CLASSIFIED",
                 timestamp: new Date(),
                 attemptId: attemptData._id,
-                metadata: { oldIp, newIp: detectedIp, ipChangeType }
+                metadata: { oldIp, newIp: detectedIp, ipChangeType, ipChangeCount: attemptData.ipChangeCount }
             },
             {
                 name: "IP_CHANGE_WARNING_SHOWN",
                 timestamp: new Date(),
                 attemptId: attemptData._id,
-                metadata: { oldIp, newIp: detectedIp, ipChangeType }
+                metadata: { oldIp, newIp: detectedIp, ipChangeType, ipChangeCount: attemptData.ipChangeCount }
             }
         );
     }

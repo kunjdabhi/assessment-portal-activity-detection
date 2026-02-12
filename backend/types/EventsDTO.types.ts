@@ -21,6 +21,7 @@ export interface IpChangeMetadata {
     oldIp: string;
     newIp: string;
     ipChangeType?: 'BENIGN' | 'SUSPICIOUS';
+    ipChangeCount?: number;
 }
 
 // Event document interface

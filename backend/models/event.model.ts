@@ -35,10 +35,37 @@ const EventSchema = new mongoose.Schema({
         ipChangeType: {
             type: String,
             enum: ["BENIGN", "SUSPICIOUS"]
+        },
+        ipChangeCount: {
+            type: Number
         }
 
     }
 
 })
+
+EventSchema.pre('updateOne', function () {
+    throw new Error('Events are immutable and cannot be updated');
+});
+
+EventSchema.pre('updateMany', function () {
+    throw new Error('Events are immutable and cannot be updated');
+});
+
+EventSchema.pre('findOneAndUpdate', function () {
+    throw new Error('Events are immutable and cannot be updated');
+});
+
+EventSchema.pre('deleteOne', function () {
+    throw new Error('Events are immutable and cannot be deleted');
+});
+
+EventSchema.pre('deleteMany', function () {
+    throw new Error('Events are immutable and cannot be deleted');
+});
+
+EventSchema.pre('findOneAndDelete', function () {
+    throw new Error('Events are immutable and cannot be deleted');
+});
 
 export default mongoose.model("Event", EventSchema);
