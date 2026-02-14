@@ -76,18 +76,6 @@ const addEvents = async (events: CreateEventDTO[], detectedIp: string | null): P
         throw new Error("Attempt not found");
     }
 
-    let ipChanged = false;
-
-    if (detectedIp) {
-        const result = await handleIpChange(attemptData, detectedIp);
-        ipChanged = result.ipChanged;
-
-        // Add generated IP change events to the beginning
-        if (result.events.length > 0) {
-            events.unshift(...result.events);
-        }
-    }
-
     const eventToAdd = events.map((event: CreateEventDTO) => {
         const baseEvent = {
             name: event.name,
@@ -107,7 +95,7 @@ const addEvents = async (events: CreateEventDTO[], detectedIp: string | null): P
 
     await Event.insertMany(eventToAdd);
 
-    return ipChanged;
+    return false;
 }
 
 const checkIpForAttempt = async (attemptId: string, detectedIp: string | null) => {
