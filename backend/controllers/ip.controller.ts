@@ -15,10 +15,7 @@ const registerIp = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'username is required' });
         }
 
-        const testIp = body.ip as string;
-        const detectedIp = request.getClientIp(req);
-
-        const ip = testIp || detectedIp;
+        const ip = request.getClientIp(req);
 
         let attempt;
         if (ip) {
@@ -32,7 +29,7 @@ const registerIp = async (req: Request, res: Response) => {
         res.status(200).json({
             attempt,
             ipUsed: ip,
-            source: testIp ? 'query_parameter' : 'detected'
+            source: 'detected'
         });
 
     } catch (ex) {
@@ -55,10 +52,9 @@ const addEventLog = async (req: Request, res: Response) => {
 
 const checkIp = async (req: Request, res: Response) => {
     try {
-        const { attemptId, testIp } = req.body;
+        const { attemptId } = req.body;
 
-        const detectedIp = request.getClientIp(req);
-        const currentIp = testIp || detectedIp;
+        const currentIp = request.getClientIp(req);
 
         if (!attemptId) {
             return res.status(400).json({ error: 'attemptId is required' });
@@ -69,7 +65,7 @@ const checkIp = async (req: Request, res: Response) => {
         res.status(200).json({
             ...result,
             currentIp,
-            source: testIp ? 'test_parameter' : 'detected'
+            source: 'detected'
         });
 
     } catch (ex) {

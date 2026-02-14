@@ -18,8 +18,8 @@ const sendEventLogs = async (events: EventDTO[]) => {
     return response.data;
 }
 
-const checkIp = async (attemptId: string, testIp?: string) => {
-    const response = await axios.post(`/api/check-ip`, { attemptId, testIp });
+const checkIp = async (attemptId: string) => {
+    const response = await axios.post(`/api/check-ip`, { attemptId });
     return response.data;
 }
 

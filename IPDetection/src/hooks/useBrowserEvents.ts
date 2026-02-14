@@ -4,11 +4,10 @@ import type { EventDTO } from "../types/event.types";
 export function useBrowserEventHandlers(
     assessmentDurationInSeconds: number,
     attemptId: string | null,
-    setAttemptId: (id: string) => void,
+    _setAttemptId: (id: string) => void,
     eventBatch: RefObject<EventDTO[]>
 ) {
     const timerRef = useRef<number | null>(null);
-    const remainingTimeRef = useRef<number>(assessmentDurationInSeconds);
 
 
     useEffect(() => {

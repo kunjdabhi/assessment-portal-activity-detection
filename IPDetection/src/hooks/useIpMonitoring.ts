@@ -5,19 +5,14 @@ interface UseIpMonitoringProps {
     attemptId: string | null;
     isRunning: boolean;
     intervalMs?: number;
-    testIp?: string;
 }
 
 export function useIpMonitoring({
     attemptId,
     isRunning,
     intervalMs = 30000,
-    testIp
 }: UseIpMonitoringProps) {
     const ipCheckIntervalRef = useRef<number | null>(null);
-    const testIpRef = useRef<string | undefined>(testIp);
-
-    testIpRef.current = testIp;
 
     useEffect(() => {
         if (!attemptId || !isRunning) {
@@ -26,7 +21,7 @@ export function useIpMonitoring({
 
         const performIpCheck = async () => {
             try {
-                const result = await checkIp(attemptId, testIpRef.current);
+                const result = await checkIp(attemptId);
 
                 if (result.ipChanged) {
                     window.dispatchEvent(new CustomEvent('ip-change-detected', {
