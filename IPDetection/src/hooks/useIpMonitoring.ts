@@ -1,16 +1,26 @@
 import { useEffect, useRef } from "react";
 import { checkIp } from "../services/ip.services";
 
+export interface IpChangeDetail {
+    oldIp: string;
+    newIp: string;
+    ipChangeType: 'BENIGN' | 'SUSPICIOUS';
+}
+
 interface UseIpMonitoringProps {
     attemptId: string | null;
     isRunning: boolean;
     intervalMs?: number;
+    onIpChange: (detail: IpChangeDetail) => void;
+    onError: (message: string) => void;
 }
 
 export function useIpMonitoring({
     attemptId,
     isRunning,
     intervalMs = 30000,
+    onIpChange,
+    onError,
 }: UseIpMonitoringProps) {
     const ipCheckIntervalRef = useRef<number | null>(null);
 
@@ -24,19 +34,15 @@ export function useIpMonitoring({
                 const result = await checkIp(attemptId);
 
                 if (result.ipChanged) {
-                    console.log('IP CHANGE DETECTED - dispatching event', result);
-                    window.dispatchEvent(new CustomEvent('ip-change-detected', {
-                        detail: {
-                            oldIp: result.oldIp,
-                            newIp: result.currentIp,
-                            ipChangeType: result.ipChangeType
-                        }
-                    }));
-                } else {
-                    console.log('IP check - no change', result);
+                    onIpChange({
+                        oldIp: result.oldIp,
+                        newIp: result.currentIp,
+                        ipChangeType: result.ipChangeType
+                    });
                 }
             } catch (error) {
-                alert("Failed to verify IP address. Please check your connection.");
+                console.error("Failed to verify IP address:", error);
+                onError('Failed to verify IP address. Please check your connection.');
             }
         };
 
@@ -54,3 +60,4 @@ export function useIpMonitoring({
 
     return null;
 }
+

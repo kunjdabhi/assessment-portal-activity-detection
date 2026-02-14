@@ -1,54 +1,55 @@
-import { useEffect, useState } from 'react';
+import type { IpChangeDetail } from '../hooks/useIpMonitoring';
 
-
-interface IpChangeDetail {
-    oldIp: string;
-    newIp: string;
-    ipChangeType: 'BENIGN' | 'SUSPICIOUS';
+interface NotificationBannerProps {
+    title: string;
+    message: string;
+    variant?: 'warning' | 'error';
+    onDismiss: () => void;
 }
 
-export function IpChangeNotification() {
-    const [show, setShow] = useState(false);
-    const [details, setDetails] = useState<IpChangeDetail | null>(null);
-
-    useEffect(() => {
-        const handleIpChange = (event: Event) => {
-            const customEvent = event as CustomEvent<IpChangeDetail>;
-            console.log('IpChangeNotification - event received:', customEvent.detail);
-            setDetails(customEvent.detail);
-            setShow(true);
-
-            setTimeout(() => {
-                setShow(false);
-            }, 5000);
-        };
-
-        window.addEventListener('ip-change-detected', handleIpChange);
-        console.log('IpChangeNotification - listener registered');
-
-        return () => {
-            window.removeEventListener('ip-change-detected', handleIpChange);
-        };
-    }, []);
-
-    if (!show || !details) {
-        return null;
-    }
+function NotificationBanner({ title, message, variant = 'warning', onDismiss }: NotificationBannerProps) {
+    const className = variant === 'error' 
+        ? 'ip-notification ip-notification-error' 
+        : 'ip-notification';
 
     return (
-        <div className="ip-notification">
-            <div className="ip-notification-header">
-                ⚠️ IP Address Changed
-            </div>
+        <div className={className}>
+            <div className="ip-notification-header">{title}</div>
             <div className="ip-notification-body">
-                <p>Your IP address has changed during the assessment. This activity has been logged.</p>
+                <p>{message}</p>
             </div>
-            <button 
-                className="ip-notification-close"
-                onClick={() => setShow(false)}
-            >
+            <button className="ip-notification-close" onClick={onDismiss}>
                 ✕
             </button>
         </div>
+    );
+}
+
+interface IpChangeNotificationProps {
+    ipChange: IpChangeDetail | null;
+    errorMsg: string | null;
+    onDismissIpChange: () => void;
+    onDismissError: () => void;
+}
+
+export function IpChangeNotification({ ipChange, errorMsg, onDismissIpChange, onDismissError }: IpChangeNotificationProps) {
+    return (
+        <>
+            {ipChange && (
+                <NotificationBanner
+                    title="IP Address Changed"
+                    message="Your IP address has changed during the assessment. This activity has been logged."
+                    onDismiss={onDismissIpChange}
+                />
+            )}
+            {errorMsg && (
+                <NotificationBanner
+                    title="Connection Issue"
+                    message={errorMsg}
+                    variant="error"
+                    onDismiss={onDismissError}
+                />
+            )}
+        </>
     );
 }

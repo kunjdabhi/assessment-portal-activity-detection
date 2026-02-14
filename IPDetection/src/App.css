@@ -542,6 +542,14 @@
   color: #ffffff;
 }
 
+.ip-notification-error {
+  border-color: #f44336;
+}
+
+.ip-notification-error .ip-notification-header {
+  color: #f44336;
+}
+
 /* AdminDashboard.css */
 .admin-dashboard {
   min-height: 100vh;

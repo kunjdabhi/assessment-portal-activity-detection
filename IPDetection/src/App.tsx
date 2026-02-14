@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import type { IpChangeDetail } from './hooks/useIpMonitoring'
 import './App.css'
 import { registerIp, sendEventLogs, completeAttempt } from './services/ip.services'
 import type { EventDTO } from './types/event.types'
@@ -28,6 +29,8 @@ function AssessmentPage() {
   
   const [questions, setQuestions] = useState<any[]>([]); 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [ipChange, setIpChange] = useState<IpChangeDetail | null>(null);
+  const [ipError, setIpError] = useState<string | null>(null);
 
   const eventBatch = useRef<EventDTO[]>([])
   
@@ -91,7 +94,19 @@ function AssessmentPage() {
   const { isOnline, wasOffline } = useNetworkStatus();
 
   useBrowserEventHandlers(INITIAL_TIME, attemptId, setAttemptId, eventBatch);
-  useIpMonitoring({ attemptId, isRunning, intervalMs: IP_CHECK_INTERVAL });
+  useIpMonitoring({ 
+    attemptId, 
+    isRunning, 
+    intervalMs: IP_CHECK_INTERVAL,
+    onIpChange: (detail) => {
+      setIpChange(detail);
+      setTimeout(() => setIpChange(null), 5000);
+    },
+    onError: (message) => {
+      setIpError(message);
+      setTimeout(() => setIpError(null), 5000);
+    }
+  });
 
   useEffect(() => {
     if (wasOffline && isOnline) {
@@ -156,7 +171,12 @@ function AssessmentPage() {
 
   return (
     <>
-      <IpChangeNotification />
+      <IpChangeNotification 
+        ipChange={ipChange}
+        errorMsg={ipError}
+        onDismissIpChange={() => setIpChange(null)}
+        onDismissError={() => setIpError(null)}
+      />
       {attemptId && <Timer timeRemaining={timeRemaining} />}
       <div className="card">
         {!attemptId && (
