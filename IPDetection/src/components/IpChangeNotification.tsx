@@ -14,6 +14,7 @@ export function IpChangeNotification() {
     useEffect(() => {
         const handleIpChange = (event: Event) => {
             const customEvent = event as CustomEvent<IpChangeDetail>;
+            console.log('IpChangeNotification - event received:', customEvent.detail);
             setDetails(customEvent.detail);
             setShow(true);
 
@@ -23,6 +24,7 @@ export function IpChangeNotification() {
         };
 
         window.addEventListener('ip-change-detected', handleIpChange);
+        console.log('IpChangeNotification - listener registered');
 
         return () => {
             window.removeEventListener('ip-change-detected', handleIpChange);

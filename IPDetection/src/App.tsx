@@ -16,8 +16,8 @@ import type { SessionData } from './services/storage.service'
 import { getEventQueue, clearEventQueue } from './services/storage.service'
 import { AdminDashboard } from './pages/AdminDashboard'
 
-const INITIAL_TIME = 10 * 60; 
-const IP_CHECK_INTERVAL = 30000;
+const INITIAL_TIME = import.meta.env.INITIAL_TIME; 
+const IP_CHECK_INTERVAL = import.meta.env.IP_CHECK_INTERVAL;
 
 function AssessmentPage() {
 
@@ -67,7 +67,7 @@ function AssessmentPage() {
     } catch (err: any) {
         const errorMessage = err.response?.data?.error || "Failed to start assessment. Please try again.";
         setError(errorMessage);
-        alert(errorMessage);
+        console.error(errorMessage);
     }
   }
 
@@ -134,7 +134,7 @@ function AssessmentPage() {
 
         await completeAttempt(attemptId);
       } catch (error) {
-        alert("Failed to confirm assessment completion. Please check your connection.");
+        console.error("Failed to confirm assessment completion. Please check your connection.");
       }
     }
     

@@ -24,6 +24,7 @@ export function useIpMonitoring({
                 const result = await checkIp(attemptId);
 
                 if (result.ipChanged) {
+                    console.log('IP CHANGE DETECTED - dispatching event', result);
                     window.dispatchEvent(new CustomEvent('ip-change-detected', {
                         detail: {
                             oldIp: result.oldIp,
@@ -31,6 +32,8 @@ export function useIpMonitoring({
                             ipChangeType: result.ipChangeType
                         }
                     }));
+                } else {
+                    console.log('IP check - no change', result);
                 }
             } catch (error) {
                 alert("Failed to verify IP address. Please check your connection.");
