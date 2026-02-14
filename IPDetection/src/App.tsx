@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import './App.css'
 import { registerIp, sendEventLogs, completeAttempt } from './services/ip.services'
 import type { EventDTO } from './types/event.types'
@@ -18,11 +19,7 @@ import { AdminDashboard } from './pages/AdminDashboard'
 const INITIAL_TIME = 10 * 60; 
 const IP_CHECK_INTERVAL = 30000;
 
-function App() {
-  
-  if (window.location.pathname === '/admin') {
-    return <AdminDashboard />;
-  }
+function AssessmentPage() {
 
   const [attemptId, setAttemptId] = useState<string | null>(null);
   const [username, setUsername] = useState<string>("");
@@ -192,6 +189,15 @@ function App() {
         />}
       </div>
     </>
+  )
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<AssessmentPage />} />
+      <Route path="/admin" element={<AdminDashboard />} />
+    </Routes>
   )
 }
 
