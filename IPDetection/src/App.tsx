@@ -16,8 +16,8 @@ import type { SessionData } from './services/storage.service'
 import { getEventQueue, clearEventQueue } from './services/storage.service'
 import { AdminDashboard } from './pages/AdminDashboard'
 
-const INITIAL_TIME = import.meta.env.INITIAL_TIME; 
-const IP_CHECK_INTERVAL = import.meta.env.IP_CHECK_INTERVAL;
+const INITIAL_TIME = parseInt(import.meta.env.VITE_INITIAL_TIME) || 600; 
+const IP_CHECK_INTERVAL = parseInt(import.meta.env.VITE_IP_CHECK_INTERVAL) || 10000;
 
 function AssessmentPage() {
 
